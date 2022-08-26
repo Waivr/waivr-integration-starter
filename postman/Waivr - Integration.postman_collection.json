@@ -1,0 +1,339 @@
+{
+	"info": {
+		"_postman_id": "b2b64393-c954-4077-b68c-a69902f73b9f",
+		"name": "Waivr - Integration",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1972145"
+	},
+	"item": [
+		{
+			"name": "01 - Onboard and Create a Payment Instruction",
+			"item": [
+				{
+					"name": "01 - Business Partner - Create",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"businessPartnerUuid\", jsonData.uuid);",
+									"",
+									"var limitedToken = jsonData.metadata.apiTokens.find(e => e.key.startsWith(\"BT-EX-\"))",
+									"postman.setEnvironmentVariable(\"apiTokenKey\", limitedToken.key);",
+									"postman.setEnvironmentVariable(\"apiTokenSecret\", limitedToken.secret);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"identification\": {\n        \"legalName\": \"Waiver Test Business Partnerr\",\n        \"email\": \"waiver_test_business_partner+{{$timestamp}}@somebiz.com\",\n        \"address\": {\n            \"line1\": \"126 Stillwell Avenue\",\n            \"line2\": \"San Francisco 78412\",\n            \"city\": \"San Francisco\",\n            \"state\": \"California\",\n            \"country\": \"USA\",\n            \"zipCode\": \"012345\"\n        },\n        \"tin\": \"922913776\",\n        \"ownerCertification\": {\n            \"firstName\": \"John\",\n            \"lastName\": \"Doe\",\n            \"address\": {\n                \"line1\": \"126 Stillwell Avenue\",\n                \"line2\": \"San Francisco 78412\",\n                \"city\": \"San Francisco\",\n                \"state\": \"California\",\n                \"country\": \"USA\",\n                \"zipCode\": \"012345\"\n            },\n            \"ssn\": \"458280978\",\n            \"dateOfBirth\": \"1973-08-15\"\n        }\n    },\n    \"bankInstitution\": {\n        \"accountNumber\": \"19701889\",\n        \"routingNumber\": \"074900783\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{hostWaivrApp}}/v1/businesspartners",
+							"host": [
+								"{{hostWaivrApp}}"
+							],
+							"path": [
+								"v1",
+								"businesspartners"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02 - Consumer - Create without Merchant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"consumerUuid\", jsonData.uuid);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{apiTokenKey}} {{apiTokenSecret}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"businessPartnerUuid\": \"{{businessPartnerUuid}}\",\n    \"email\": \"customer+{{$timestamp}}@somebiz.com\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"phoneNumber\": \"4541239955\",\n    \"address\": {\n        \"line1\": \"126 Stillwell Avenue\",\n        \"line2\": \"San Francisco 78412\",\n        \"city\": \"San Francisco\",\n        \"state\": \"California\",\n        \"country\": \"USA\",\n        \"zipCode\": \"012345\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{hostWaivrApp}}/v1/consumers",
+							"host": [
+								"{{hostWaivrApp}}"
+							],
+							"path": [
+								"v1",
+								"consumers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03 - Linking Account - Create Render Link token Without Merchant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"linkingAccessToken\", jsonData.linkingAccessToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{apiTokenKey}} {{apiTokenSecret}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"businessPartnerUuid\": \"{{businessPartnerUuid}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{hostWaivrApp}}/v1/linkingaccounts/render",
+							"host": [
+								"{{hostWaivrApp}}"
+							],
+							"path": [
+								"v1",
+								"linkingaccounts",
+								"render"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "04 - Linking Account - Create Connect Account Without Merchant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{apiTokenKey}} {{apiTokenSecret}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"businessPartnerUuid\": \"{{businessPartnerUuid}}\",\n    \"consumerUuid\": \"{{consumerUuid}}\",\n    \"institution\": {\n        \"identifier\": \"ins_4\",\n        \"accountIdentifier\": \"LmvZWR8643TA6w6DrVK1C9PNoXrEDKSoxQeXq\"\n    },\n    \"publicToken\": \"public-sandbox-4fd6de74-241b-4d32-ac19-31a51f91ae3c\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{hostWaivrApp}}/v1/linkingaccounts/connect",
+							"host": [
+								"{{hostWaivrApp}}"
+							],
+							"path": [
+								"v1",
+								"linkingaccounts",
+								"connect"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "05 - Payment Instruction - Create",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"paymentInstructionUuid\", jsonData.uuid);",
+									"postman.setEnvironmentVariable(\"paymentInstructionExtRefId\", jsonData.externalReferenceIdentifier);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{apiTokenKey}} {{apiTokenSecret}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"externalReferenceIdentifier\": \"extRefId-{{$timestamp}}\",\n    \"consumerUuid\": \"{{consumerUuid}}\",\n    \"businessPartnerUuid\": \"{{businessPartnerUuid}}\",\n    \"amount\": 10.99,\n    \"frequency\": {\n        \"recurrence\": 1,\n        \"cycle\": \"BI_WEEKLY\"\n    },\n    \"nextBillingDate\": \"2122-01-17T18:00:00Z\",\n    \"recurringEndDate\": \"2123-01-17T18:00:00Z\",\n    \"metadata\": {\n        \"shippingDetails\": {\n            \"personName\": {\n                \"firstName\": \"John\",\n                \"lastName\": \"Doe\"\n            },\n            \"address\": {\n                \"line1\": \"213 Alme Str\",\n                \"line2\": null,\n                \"city\": \"San Francisco\",\n                \"state\": \"California\",\n                \"country\": \"US\",\n                \"zipCode\": \"012345\"\n            }\n        },\n        \"orderDetails\": {\n            \"product\": {\n                \"name\": \"Mint Lime\",\n                \"size\": \"L\"\n            },\n            \"quantity\": 2\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{hostWaivrApp}}/v1/paymentinstructions",
+							"host": [
+								"{{hostWaivrApp}}"
+							],
+							"path": [
+								"v1",
+								"paymentinstructions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "06 - Payment Instruction - Summary",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{apiTokenKey}} {{apiTokenSecret}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{hostWaivrApp}}/v1/paymentinstructions/{{paymentInstructionUuid}}/summary",
+							"host": [
+								"{{hostWaivrApp}}"
+							],
+							"path": [
+								"v1",
+								"paymentinstructions",
+								"{{paymentInstructionUuid}}",
+								"summary"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02 - Manage Payments",
+			"item": [
+				{
+					"name": "01 - Payment - Make a payment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{apiTokenKey}} {{apiTokenSecret}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"externalReferenceIdentifier\": \"{{paymentInstructionExtRefId}}\",\n    \"consumerUuid\": \"{{consumerUuid}}\",\n    \"businessPartnerUuid\": \"{{businessPartnerUuid}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{hostWaivrApp}}/v1/payments/ach",
+							"host": [
+								"{{hostWaivrApp}}"
+							],
+							"path": [
+								"v1",
+								"payments",
+								"ach"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

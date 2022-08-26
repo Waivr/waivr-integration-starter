@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+  <div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <style>
+      div.checkout {
+        padding: 2%;
+      }
+
+      .sectionForm > div > h2
+      {
+        width: 500px;
+      }
+
+      .sectionForm > div.section
+      {
+        display: grid;
+        grid-template-columns: [labels] 150px [controls] 1fr;
+        grid-auto-flow: row;
+        grid-gap: .8em;
+        padding: 1.2em;
+      }
+      .sectionForm > div > label
+      {
+        grid-column: labels;
+        grid-row: auto;
+      }
+      .sectionForm > div > span,
+      {
+        grid-column: controls;
+        grid-row: auto;
+      }
+      .sectionForm > button {
+        grid-column: span 2;
+      }
+    </style>
+
+    <div>
+      <div class="checkout">
+        <div class="sectionForm">
+          <div class="section">
+            <h2>Subscription details</h2>
+
+            <label for="status">Status: </label>
+            <span id="status"></span>
+
+            <label for="amount">Amount: </label>
+            <span id="amount"></span>
+
+            <label for="frequency">Frequency: </label>
+            <span id="frequency"></span>
+
+            <label for="nextBillingDate">Next Billing Date: </label>
+            <span id="nextBillingDate"></span>
+
+            <label for="recurringEndDate">Recurring End Date: </label>
+            <span id="recurringEndDate"></span>
+          </div>
+
+          <div class="section">
+            <h3>Bank Account</h3>
+
+            <label for="bankInstitutionName">Institution Name: </label>
+            <span id="bankInstitutionName"></span>
+
+            <label for="bankAccountNumber">Account Number: </label>
+            <span id="bankAccountNumber"></span>
+
+            <label for="bankRoutingNumber">Routing Number: </label>
+            <span id="bankRoutingNumber"></span>
+
+          </div>
+        </div>
+      </div>
+
+
+      <div style="text-align: center;">
+        <button id="confirmation-button" class="button button--primary" data-initialized="true">Confirm Payment</button>
+      </div>
+    </div>
+
+
+    <script type="text/javascript">
+      const paymentInstructionSummary = JSON.parse(localStorage.getItem("paymentInstructionSummary"));
+      console.log("paymentInstructionSummary: ", paymentInstructionSummary);
+      $('#amount').text('$' + paymentInstructionSummary.amount + '.00');
+      $('#status').text(paymentInstructionSummary.status);
+      $('#frequency').text(paymentInstructionSummary.frequency.recurrence + '/' + paymentInstructionSummary.frequency.cycle);
+      $('#nextBillingDate').text(paymentInstructionSummary.nextBillingDate);
+      $('#recurringEndDate').text(paymentInstructionSummary.recurringEndDate);
+
+      const bankAccount = paymentInstructionSummary.bankAccount;
+      $('#bankInstitutionName').text(bankAccount.institutionName);
+      $('#bankAccountNumber').text(bankAccount.maskedAccountNumber);
+      $('#bankRoutingNumber').text(bankAccount.maskedRoutingNumber);
+
+      // This is Waiver production api
+      const envUrl = "https://app.waivr.co/api";
+
+      // Upon registering your business you should have access to a UUID
+      const businessPartnerUuid = "<Your Business Partner UUID>";
+
+      // As part of the onboarding mentioned just above, you will receive a set of keys.
+      // The most restrictive key is the one starting with 'BT-EX-', prefer using it if you have no
+      // other option not to have some level of exposure.
+      const authorizationHeader = "BT-EX-" + businessPartnerUuid + " <Your Busines partner Secret>";
+
+      const headers = {
+        "Content-Type": "application/json",
+        "Authorization": authorizationHeader,
+      };
+
+      const getResponseBodyOrErrorOut = async (res, status) => {
+        console.log("logging res", res);
+
+        const body = await res.json();
+        console.log("logging res", res);
+
+        if (res.status === status) {
+          return body;
+        }
+
+        const description = body && body.description;
+        alert(description)
+        throw new Error("Could not create process.", description);
+      };
+
+      // ############################################################
+      // From here onwards, this is how you integrate with Waivr
+      // ############################################################
+
+      // NOTE
+      // Make sure to have already created a similar flow as shown in WaivrStore.html
+
+      // Now that you have already displayed the payment summary, all you need is to make a payment
+      const createPayment = async (paymentInstruction) => {
+        const payload = {
+          externalReferenceIdentifier: paymentInstruction.externalReferenceId,
+          consumerUuid: paymentInstruction.consumerUuid,
+          businessPartnerUuid: paymentInstruction.businessPartnerUuid
+        };
+
+        const res = await fetch(envUrl + "/waivr-app/v1/payments/ach", {
+          method: "POST",
+          body: JSON.stringify(payload),
+          headers: headers,
+        });
+
+        const data = await getResponseBodyOrErrorOut(res, 201);
+        console.log("payment", data)
+        localStorage.setItem("payment", JSON.stringify(data));
+        alert("Payment was created with success.");
+        return data;
+      };
+
+      // ##################################################################################################
+      // From here onwards, this is how you orchestrate the calls to create a payment
+      // ##################################################################################################
+      (async ($) => {
+        const confirmSubscription = async () => {
+          await createPayment(paymentInstructionSummary);
+        }
+
+        $('#confirmation-button').on('click', function(e) { confirmSubscription() });
+      })(jQuery);
+    </script>
+  </div>
+
+</body>
+</html>
