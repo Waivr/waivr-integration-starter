@@ -10,50 +10,7 @@
 			"name": "01 - Onboard and Create a Payment Instruction",
 			"item": [
 				{
-					"name": "01 - Business Partner - Create",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);",
-									"postman.setEnvironmentVariable(\"businessPartnerUuid\", jsonData.uuid);",
-									"",
-									"var limitedToken = jsonData.metadata.apiTokens.find(e => e.key.startsWith(\"BT-EX-\"))",
-									"postman.setEnvironmentVariable(\"apiTokenKey\", limitedToken.key);",
-									"postman.setEnvironmentVariable(\"apiTokenSecret\", limitedToken.secret);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"identification\": {\n        \"legalName\": \"Waiver Test Business Partnerr\",\n        \"email\": \"waiver_test_business_partner+{{$timestamp}}@somebiz.com\",\n        \"address\": {\n            \"line1\": \"126 Stillwell Avenue\",\n            \"line2\": \"San Francisco 78412\",\n            \"city\": \"San Francisco\",\n            \"state\": \"California\",\n            \"country\": \"USA\",\n            \"zipCode\": \"012345\"\n        },\n        \"tin\": \"922913776\",\n        \"ownerCertification\": {\n            \"firstName\": \"John\",\n            \"lastName\": \"Doe\",\n            \"address\": {\n                \"line1\": \"126 Stillwell Avenue\",\n                \"line2\": \"San Francisco 78412\",\n                \"city\": \"San Francisco\",\n                \"state\": \"California\",\n                \"country\": \"USA\",\n                \"zipCode\": \"012345\"\n            },\n            \"ssn\": \"458280978\",\n            \"dateOfBirth\": \"1973-08-15\"\n        }\n    },\n    \"bankInstitution\": {\n        \"accountNumber\": \"19701889\",\n        \"routingNumber\": \"074900783\"\n    }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{hostWaivrApp}}/v1/businesspartners",
-							"host": [
-								"{{hostWaivrApp}}"
-							],
-							"path": [
-								"v1",
-								"businesspartners"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "02 - Consumer - Create without Merchant",
+					"name": "01 - Consumer - Create without Merchant",
 					"event": [
 						{
 							"listen": "test",
@@ -98,7 +55,7 @@
 					"response": []
 				},
 				{
-					"name": "03 - Linking Account - Create Render Link token Without Merchant",
+					"name": "02 - Linking Account - Create Render Link token Without Merchant",
 					"event": [
 						{
 							"listen": "test",
@@ -144,7 +101,7 @@
 					"response": []
 				},
 				{
-					"name": "04 - Linking Account - Create Connect Account Without Merchant",
+					"name": "03 - Linking Account - Create Connect Account Without Merchant",
 					"event": [
 						{
 							"listen": "test",
@@ -189,7 +146,7 @@
 					"response": []
 				},
 				{
-					"name": "05 - Payment Instruction - Create",
+					"name": "04 - Payment Instruction - Create",
 					"event": [
 						{
 							"listen": "test",
@@ -235,7 +192,7 @@
 					"response": []
 				},
 				{
-					"name": "06 - Payment Instruction - Summary",
+					"name": "05 - Payment Instruction - Summary",
 					"event": [
 						{
 							"listen": "test",
