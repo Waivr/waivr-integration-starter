@@ -10,14 +10,14 @@
 			"name": "01 - Onboard and Create a Payment Instruction",
 			"item": [
 				{
-					"name": "01 - Consumer - Create without Merchant",
+					"name": "01 - Customer - Create",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
-									"postman.setEnvironmentVariable(\"consumerUuid\", jsonData.uuid);"
+									"postman.setEnvironmentVariable(\"customerUid\", jsonData.uid);"
 								],
 								"type": "text/javascript"
 							}
@@ -34,7 +34,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"businessPartnerUuid\": \"{{businessPartnerUuid}}\",\n    \"email\": \"customer+{{$timestamp}}@somebiz.com\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"phoneNumber\": \"4541239955\",\n    \"address\": {\n        \"line1\": \"126 Stillwell Avenue\",\n        \"line2\": \"San Francisco 78412\",\n        \"city\": \"San Francisco\",\n        \"state\": \"California\",\n        \"country\": \"USA\",\n        \"zipCode\": \"012345\"\n    }\n}",
+							"raw": "{\n    \"merchantUid\": \"{{merchantUid}}\",\n    \"email\": \"customer+{{$timestamp}}@somebiz.com\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"phoneNumber\": \"4541239955\",\n    \"address\": {\n        \"line1\": \"126 Stillwell Avenue\",\n        \"line2\": \"San Francisco 78412\",\n        \"city\": \"San Francisco\",\n        \"state\": \"California\",\n        \"country\": \"USA\",\n        \"zipCode\": \"012345\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -42,13 +42,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{hostWaivrApp}}/v1/consumers",
+							"raw": "{{hostWaivrApp}}/v1/customer",
 							"host": [
 								"{{hostWaivrApp}}"
 							],
 							"path": [
 								"v1",
-								"consumers"
+								"customer"
 							]
 						}
 					},
@@ -79,7 +79,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"businessPartnerUuid\": \"{{businessPartnerUuid}}\"\n}",
+							"raw": "{\n  \"merchantUid\": \"{{merchantUid}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -87,13 +87,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{hostWaivrApp}}/v1/linkingaccounts/render",
+							"raw": "{{hostWaivrApp}}/v1/connectaccounts/render",
 							"host": [
 								"{{hostWaivrApp}}"
 							],
 							"path": [
 								"v1",
-								"linkingaccounts",
+								"connectaccounts",
 								"render"
 							]
 						}
@@ -124,7 +124,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"businessPartnerUuid\": \"{{businessPartnerUuid}}\",\n    \"consumerUuid\": \"{{consumerUuid}}\",\n    \"institution\": {\n        \"identifier\": \"ins_4\",\n        \"accountIdentifier\": \"LmvZWR8643TA6w6DrVK1C9PNoXrEDKSoxQeXq\"\n    },\n    \"publicToken\": \"public-sandbox-4fd6de74-241b-4d32-ac19-31a51f91ae3c\"\n}",
+							"raw": "{\n  \"merchantUid\": \"{{merchantUid}}\",\n  \"customerUid\": \"{{customerUid}}\",\n  \"institution\": {\n    \"identifier\": \"ins_4\",\n    \"accountIdentifier\": \"PV3o5l8BeduJE99kpnoPHv453Jj1zaC89k8Pz\"\n  },\n  \"publicToken\": \"public-sandbox-cbaa296b-7107-4748-8819-8e5551c06c87\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -132,13 +132,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{hostWaivrApp}}/v1/linkingaccounts/connect",
+							"raw": "{{hostWaivrApp}}/v1/connectaccounts/connect",
 							"host": [
 								"{{hostWaivrApp}}"
 							],
 							"path": [
 								"v1",
-								"linkingaccounts",
+								"connectaccounts",
 								"connect"
 							]
 						}
@@ -153,7 +153,7 @@
 							"script": {
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);",
-									"postman.setEnvironmentVariable(\"paymentInstructionUuid\", jsonData.uuid);",
+									"postman.setEnvironmentVariable(\"paymentInstructionUid\", jsonData.uid);",
 									"postman.setEnvironmentVariable(\"paymentInstructionExtRefId\", jsonData.externalReferenceIdentifier);"
 								],
 								"type": "text/javascript"
@@ -171,7 +171,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"externalReferenceIdentifier\": \"extRefId-{{$timestamp}}\",\n    \"consumerUuid\": \"{{consumerUuid}}\",\n    \"businessPartnerUuid\": \"{{businessPartnerUuid}}\",\n    \"amount\": 10.99,\n    \"frequency\": {\n        \"recurrence\": 1,\n        \"cycle\": \"BI_WEEKLY\"\n    },\n    \"nextBillingDate\": \"2122-01-17T18:00:00Z\",\n    \"recurringEndDate\": \"2123-01-17T18:00:00Z\",\n    \"metadata\": {\n        \"shippingDetails\": {\n            \"personName\": {\n                \"firstName\": \"John\",\n                \"lastName\": \"Doe\"\n            },\n            \"address\": {\n                \"line1\": \"213 Alme Str\",\n                \"line2\": null,\n                \"city\": \"San Francisco\",\n                \"state\": \"California\",\n                \"country\": \"US\",\n                \"zipCode\": \"012345\"\n            }\n        },\n        \"orderDetails\": {\n            \"product\": {\n                \"name\": \"Mint Lime\",\n                \"size\": \"L\"\n            },\n            \"quantity\": 2\n        }\n    }\n}",
+							"raw": "{\n  \"externalReferenceIdentifier\" : \"extRefId-{{$timestamp}}\",\n  \"customerUid\" : \"{{customerUid}}\",\n  \"merchantUid\": \"{{merchantUid}}\",\n  \"amount\" : 10.99,\n  \"frequency\" : {\n    \"recurrence\" : 1,\n    \"cycle\" : \"BI_WEEKLY\"\n  },\n  \"nextBillingDate\" : \"2122-01-17T18:00:00Z\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -226,14 +226,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{hostWaivrApp}}/v1/paymentinstructions/{{paymentInstructionUuid}}/summary",
+							"raw": "{{hostWaivrApp}}/v1/paymentinstructions/{{paymentInstructionUid}}/summary",
 							"host": [
 								"{{hostWaivrApp}}"
 							],
 							"path": [
 								"v1",
 								"paymentinstructions",
-								"{{paymentInstructionUuid}}",
+								"{{paymentInstructionUid}}",
 								"summary"
 							]
 						}
@@ -269,7 +269,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"externalReferenceIdentifier\": \"{{paymentInstructionExtRefId}}\",\n    \"consumerUuid\": \"{{consumerUuid}}\",\n    \"businessPartnerUuid\": \"{{businessPartnerUuid}}\"\n}",
+							"raw": "{\n  \"paymentInstructionUid\": \"{{paymentInstructionUid}}\",\n  \"methodType\": \"ACH\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"

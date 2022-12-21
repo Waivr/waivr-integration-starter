@@ -179,6 +179,11 @@
 
 
   <script type="text/javascript">
+    const allCookies = document.cookie;
+    console.log("allCookies", allCookies);
+    document.cookie = "username=John Doe";
+    console.log("cookies", document.cookie);
+
     const shippingRecipient = $(".section-shipping-recipient");
     shippingRecipient.hide();
 
@@ -194,20 +199,37 @@
     });
 
     // This is Waiver production api
-    const envUrl = "https://app.waivr.co/api";
+    const envUrl = "https://stage.waivr.co/api";
 
     // Upon registering your business you should have access to a UUID
-    const businessPartnerUuid = "<Your Business Partner UUID>";
+    const merchantUid = "27305f40-6862-4e0a-9b51-81384dd7ab68";
 
-    // As part of the onboarding mentioned just above, you will receive a set of keys.
-    // The most restrictive key is the one starting with 'BT-EX-', prefer using it if you have no
-    // other option not to have some level of exposure.
-    const authorizationHeader = "BT-EX-" + businessPartnerUuid + " <Your Busines partner Secret>";
+    const authorizationHeader = "BT-EX-" + merchantUid + " 7VU0PefAGcmd7E8RxEZTgDZUJfoM7T4RLuUUEmuiqlNrJfu6Br";
 
     const headers = {
       "Content-Type": "application/json",
       "Authorization": authorizationHeader,
     };
+
+    function setCookie(cName, cValue, expDays) {
+        let date = new Date();
+        date.setTime(date.getTime() + (expDays * 24 * 60 * 60 * 1000));
+        const expires = "expires=" + date.toUTCString();
+        document.cookie = cName + "=" + cValue + "; " + expires + "; path=/";
+    }
+    
+    function getCookie(cName) {
+      const name = cName + "=";
+      const cDecoded = decodeURIComponent(document.cookie); //to be careful
+      const cArr = cDecoded .split('; ');
+      let res;
+      cArr.forEach(val => {
+          if (val.indexOf(name) === 0) res = val.substring(name.length);
+      })
+      return res;
+    }
+
+    setCookie('integration', "waivr", 30);
 
     // For institutions with OATH, it is required that we collect a redirect URL.
     // This URL must be provided to the payload and also informed to Waivr support team
@@ -242,7 +264,7 @@
       };
     };
 
-    const uuidV4 = () => {
+    const uidV4 = () => {
       let d = new Date().getTime();//Timestamp
       let d2 = (performance && performance.now && (performance.now() * 1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
       return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -267,14 +289,14 @@
     // proceed with the next steps
 
 
-    // Create consumer that you are onboarding during the checkout flow
-    // It's ok if the consumer has done it before, our API are idempotent.
-    const createConsumer = async () => {
+    // Create customer that you are onboarding during the checkout flow
+    // It's ok if the customer has done it before, our API are idempotent.
+    const createCustomer = async () => {
       const billingAddress = getShippingDetails();
       console.log("billingAddress", billingAddress)
 
       const payload = {
-        businessPartnerUuid: businessPartnerUuid,
+        merchantUid: merchantUid,
         email: $('#email').val(),
         firstName: $('#first-name').val(),
         lastName: $('#last-name').val(),
@@ -283,24 +305,26 @@
 
       console.log("payload", payload)
 
-      const res = await fetch(envUrl + "/waivr-app/v1/consumers", {
+      const res = await fetch(envUrl + "/waivr-app/v1/customers", {
         method: "POST",
         body: JSON.stringify(payload),
         headers: headers,
       });
 
       const data = await getResponseBodyOrErrorOut(res, 201);
-      localStorage.setItem("consumer", JSON.stringify(data));
+      sessionStorage.setItem("customer", JSON.stringify(data));
+      setCookie('customer', JSON.stringify(data), 30);
+
       return data;
     };
 
-    // Now that you have created a consumer profil in Waiver
-    // You can request a link token to render Plaid for your consumer
+    // Now that you have created a customer profil in Waiver
+    // You can request a link token to render Plaid for your customer
     // banking experience
     const createLinkToken = async () => {
-      const res = await fetch(envUrl + "/waivr-app/v1/linkingaccounts/render", {
+      const res = await fetch(envUrl + "/waivr-app/v1/connectaccounts/render", {
         method: "POST",
-        body: JSON.stringify({ businessPartnerUuid: businessPartnerUuid, redirectUrl: "https://alpha-fd34.myshopify.com/pages/contact" }),
+        body: JSON.stringify({ merchantUid: merchantUid, redirectUrl: "https://localhost:8080" }),
         headers: headers,
       });
 
@@ -309,15 +333,15 @@
     };
 
     // Once you have finished with Plaid flow and collected the important information
-    // about the consumer's bank account, you must provide the bank account data
+    // about the customer's bank account, you must provide the bank account data
     // to Waivr so we can manage the payment instructions
-    const connectAccount = async (consumer, publicToken, metadata) => {
+    const connectAccount = async (customer, publicToken, metadata) => {
       console.log('Connecting account with publicToken', publicToken, metadata);
-      await fetch(envUrl + "/waivr-app/v1/linkingaccounts/connect", {
+      await fetch(envUrl + "/waivr-app/v1/connectaccounts/connect", {
         method: "POST",
         body: JSON.stringify({
-          businessPartnerUuid: businessPartnerUuid,
-          consumerUuid: consumer.uuid,
+          merchantUid: merchantUid,
+          customerUid: customer.uid,
           institution: {
             identifier: metadata.institution.institution_id,
             accountIdentifier: metadata.account_id
@@ -328,17 +352,17 @@
       });
     }
 
-    // This is how to prepare Plaid's screen and callback in order to provide the consumer's bank account
+    // This is how to prepare Plaid's screen and callback in order to provide the customer's bank account
     // to Waivr
-    const connectBankAccount = async (consumer, linkingAccessToken, postBankConnected) => {
+    const connectBankAccount = async (customer, linkingAccessToken, postBankConnected) => {
       console.log('Calling plaid with linkingAccessToken', linkingAccessToken);
       Plaid.create({
         token: linkingAccessToken,
         onSuccess: async (publicToken, metadata) => {
-          connectAccount(consumer, publicToken, metadata);
+          connectAccount(customer, publicToken, metadata);
           setTimeout(
                   function() {
-                    postBankConnected(consumer);
+                    postBankConnected(customer);
                   }, 2000
           );
         },
@@ -349,10 +373,10 @@
       }).open();
     };
 
-    // Now that you have already onboarded the consumer and linked their bank account
+    // Now that you have already onboarded the customer and linked their bank account
     // the next step is to create the payment instructions that define how Waivr should
     // handle payments
-    const createPaymentInstruction = async (consumer) => {
+    const createPaymentInstruction = async (customer) => {
       const productPrice = 12;
 
       const productSize = $('input[name="Pack"]:checked').val();
@@ -374,9 +398,9 @@
       }
 
       const payload = {
-        externalReferenceIdentifier: uuidV4(), // this information should be your Order ID or Tracking Number.
-        consumerUuid: consumer.uuid,
-        businessPartnerUuid: businessPartnerUuid,
+        externalReferenceIdentifier: uidV4(), // this information should be your Order ID or Tracking Number.
+        customerUid: customer.uid,
+        merchantUid: merchantUid,
         amount: totalSubscription,
         frequency: {
           recurrence: frequencyRecurrence,
@@ -408,7 +432,8 @@
 
       const data = await getResponseBodyOrErrorOut(res, 201);
       console.log("payment instruction", data)
-      localStorage.setItem("paymentInstruction", JSON.stringify(data));
+      sessionStorage.setItem("paymentInstruction", JSON.stringify(data));
+      document.cookie += "paymentInstruction" + JSON.stringify(data);
       return data;
     };
 
@@ -416,7 +441,7 @@
     // The API below will consolidate all important information about the Payment Instructions and Bank account linked
     // with the system.
     const getPaymentInstructionSummary = async (paymentInstruction) => {
-      const res = await fetch(envUrl + "/waivr-app/v1/paymentinstructions/" + paymentInstruction.uuid + "/summary", {
+      const res = await fetch(envUrl + "/waivr-app/v1/paymentinstructions/" + paymentInstruction.uid + "/summary", {
         method: "GET",
         headers: headers,
       });
@@ -425,7 +450,8 @@
       console.log("paymentInstructionSummary", data)
 
       // This is an option on how to transit from this html to the confirmation page html
-      localStorage.setItem("paymentInstructionSummary", JSON.stringify(data));
+      sessionStorage.setItem("paymentInstructionSummary", JSON.stringify(data));
+      document.cookie += "paymentInstructionSummary" + JSON.stringify(data);
 
       return data;
     };
@@ -434,18 +460,18 @@
     // From here onwards, this is how you orchestrate the calls to create a payment instruction
     // ##################################################################################################
 
-    const postBankConnected = async (consumer) => {
+    const postBankConnected = async (customer) => {
       console.log("Post Bank Account")
-      const paymentInstruction = await createPaymentInstruction(consumer);
+      const paymentInstruction = await createPaymentInstruction(customer);
       await getPaymentInstructionSummary(paymentInstruction);
-      pageRedirect();
+      // pageRedirect();
     };
 
     (async ($) => {
       const runPlaid = async () => {
-        const consumer = await createConsumer();
+        const customer = await createCustomer();
         const linkingAccessToken = await createLinkToken();
-        await connectBankAccount(consumer, linkingAccessToken, postBankConnected);
+        await connectBankAccount(customer, linkingAccessToken, postBankConnected);
       }
 
       $('#link-button-again').on('click', function(e) { runPlaid() });

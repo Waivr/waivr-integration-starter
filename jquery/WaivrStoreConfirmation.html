@@ -88,7 +88,7 @@
 
 
     <script type="text/javascript">
-      const paymentInstructionSummary = JSON.parse(localStorage.getItem("paymentInstructionSummary"));
+      const paymentInstructionSummary = JSON.parse(sessionStorage.getItem("paymentInstructionSummary"));
       console.log("paymentInstructionSummary: ", paymentInstructionSummary);
       $('#amount').text('$' + paymentInstructionSummary.amount + '.00');
       $('#status').text(paymentInstructionSummary.status);
@@ -102,15 +102,12 @@
       $('#bankRoutingNumber').text(bankAccount.maskedRoutingNumber);
 
       // This is Waiver production api
-      const envUrl = "https://app.waivr.co/api";
+      const envUrl = "https://stage.waivr.co/api";
 
       // Upon registering your business you should have access to a UUID
-      const businessPartnerUuid = "<Your Business Partner UUID>";
+      const merchantUid = "27305f40-6862-4e0a-9b51-81384dd7ab68";
 
-      // As part of the onboarding mentioned just above, you will receive a set of keys.
-      // The most restrictive key is the one starting with 'BT-EX-', prefer using it if you have no
-      // other option not to have some level of exposure.
-      const authorizationHeader = "BT-EX-" + businessPartnerUuid + " <Your Busines partner Secret>";
+      const authorizationHeader = "BT-EX-" + merchantUid + " 7VU0PefAGcmd7E8RxEZTgDZUJfoM7T4RLuUUEmuiqlNrJfu6Br";
 
       const headers = {
         "Content-Type": "application/json",
@@ -140,24 +137,21 @@
       // Make sure to have already created a similar flow as shown in WaivrStore.html
 
       // Now that you have already displayed the payment summary, all you need is to make a payment
-      const createPayment = async (paymentInstruction) => {
+      const createPayment = async () => {
+        const paymentInstruction = JSON.parse(sessionStorage.getItem("paymentInstruction"));
         const payload = {
-          externalReferenceIdentifier: paymentInstruction.externalReferenceId,
-          consumerUuid: paymentInstruction.consumerUuid,
-          businessPartnerUuid: paymentInstruction.businessPartnerUuid
+          paymentInstructionUid: paymentInstruction.uid,
+          methodType: "ACH"
         };
 
-        const res = await fetch(envUrl + "/waivr-app/v1/payments/ach", {
+        const res = await fetch(envUrl + "/waivr-app/v1/payments", {
           method: "POST",
           body: JSON.stringify(payload),
           headers: headers,
         });
 
-        const data = await getResponseBodyOrErrorOut(res, 201);
-        console.log("payment", data)
-        localStorage.setItem("payment", JSON.stringify(data));
+        console.log("res", res)
         alert("Payment was created with success.");
-        return data;
       };
 
       // ##################################################################################################
@@ -165,7 +159,7 @@
       // ##################################################################################################
       (async ($) => {
         const confirmSubscription = async () => {
-          await createPayment(paymentInstructionSummary);
+          await createPayment();
         }
 
         $('#confirmation-button').on('click', function(e) { confirmSubscription() });
