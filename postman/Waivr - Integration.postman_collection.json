@@ -42,13 +42,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{hostWaivrApp}}/v1/customer",
+							"raw": "{{hostWaivrApp}}/v1/customers",
 							"host": [
 								"{{hostWaivrApp}}"
 							],
 							"path": [
 								"v1",
-								"customer"
+								"customers"
 							]
 						}
 					},
@@ -124,7 +124,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"merchantUid\": \"{{merchantUid}}\",\n  \"customerUid\": \"{{customerUid}}\",\n  \"institution\": {\n    \"identifier\": \"ins_4\",\n    \"accountIdentifier\": \"PV3o5l8BeduJE99kpnoPHv453Jj1zaC89k8Pz\"\n  },\n  \"publicToken\": \"public-sandbox-cbaa296b-7107-4748-8819-8e5551c06c87\"\n}",
+							"raw": "{\n  \"merchantUid\": \"{{merchantUid}}\",\n  \"customerUid\": \"{{customerUid}}\",\n  \"institution\": {\n    \"identifier\": \"ins_56\",\n    \"accountIdentifier\": \"J5EaZDoZR6uDKrla8MJPcMvxlPbV5Bf5ag4GV\"\n  },\n  \"publicToken\": \"public-sandbox-6bc1615b-b263-42ed-9077-10148e76546d\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -277,14 +277,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{hostWaivrApp}}/v1/payments/ach",
+							"raw": "{{hostWaivrApp}}/v1/payments",
 							"host": [
 								"{{hostWaivrApp}}"
 							],
 							"path": [
 								"v1",
-								"payments",
-								"ach"
+								"payments"
 							]
 						}
 					},
